@@ -56,15 +56,16 @@ resource "aws_vpc_endpoint_service" "gwlb" {
   tags = merge({ Name = "${var.name}-gwlb-endpoint-service" }, var.tags)
 }
 
+# Create one GWLB endpoint per subnet (AWS requires single subnet per GWLB endpoint)
 resource "aws_vpc_endpoint" "gwlb" {
-  count = var.gwlb_enabled && length(var.gwlb_endpoint_subnet_ids) > 0 ? 1 : 0
+  for_each = var.gwlb_enabled ? toset(var.gwlb_endpoint_subnet_ids) : toset([])
 
   service_name      = aws_vpc_endpoint_service.gwlb[0].service_name
-  subnet_ids        = var.gwlb_endpoint_subnet_ids
+  subnet_ids        = [each.value]
   vpc_endpoint_type = "GatewayLoadBalancer"
   vpc_id            = var.vpc_id
 
-  tags = merge({ Name = "${var.name}-gwlbe" }, var.tags)
+  tags = merge({ Name = "${var.name}-gwlbe-${each.key}" }, var.tags)
 }
 
 resource "aws_autoscaling_attachment" "gwlb" {

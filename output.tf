@@ -130,8 +130,13 @@ output "gwlb_endpoint_service_name" {
 }
 
 output "gwlb_endpoint_id" {
-  description = "The ID of the GWLB VPC endpoint"
-  value       = var.gwlb_enabled && length(var.gwlb_endpoint_subnet_ids) > 0 ? aws_vpc_endpoint.gwlb[0].id : null
+  description = "Deprecated: Use gwlb_endpoint_ids instead. Returns the first endpoint ID for backward compatibility."
+  value       = var.gwlb_enabled && length(var.gwlb_endpoint_subnet_ids) > 0 ? values(aws_vpc_endpoint.gwlb)[0].id : null
+}
+
+output "gwlb_endpoint_ids" {
+  description = "Map of subnet ID to GWLB VPC endpoint ID (one endpoint per subnet for multi-AZ support)"
+  value       = var.gwlb_enabled ? { for subnet_id, endpoint in aws_vpc_endpoint.gwlb : subnet_id => endpoint.id } : {}
 }
 
 # ASG outputs
