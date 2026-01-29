@@ -97,3 +97,76 @@ output "cw_agent_config_ssm_parameter_arn" {
   description = "The ARN of the SSM parameter containing the Cloudwatch agent config"
   value       = local.cwagent_param_arn
 }
+
+# Gateway Load Balancer outputs
+output "gwlb_arn" {
+  description = "The ARN of the Gateway Load Balancer"
+  value       = var.gwlb_enabled ? aws_lb.gwlb[0].arn : null
+}
+
+output "gwlb_id" {
+  description = "The ID of the Gateway Load Balancer"
+  value       = var.gwlb_enabled ? aws_lb.gwlb[0].id : null
+}
+
+output "gwlb_dns_name" {
+  description = "The DNS name of the Gateway Load Balancer"
+  value       = var.gwlb_enabled ? aws_lb.gwlb[0].dns_name : null
+}
+
+output "gwlb_target_group_arn" {
+  description = "The ARN of the Gateway Load Balancer target group"
+  value       = var.gwlb_enabled ? aws_lb_target_group.gwlb[0].arn : null
+}
+
+output "gwlb_endpoint_service_id" {
+  description = "The ID of the VPC Endpoint Service for the Gateway Load Balancer"
+  value       = var.gwlb_enabled ? aws_vpc_endpoint_service.gwlb[0].id : null
+}
+
+output "gwlb_endpoint_service_name" {
+  description = "The service name of the VPC Endpoint Service for the Gateway Load Balancer"
+  value       = var.gwlb_enabled ? aws_vpc_endpoint_service.gwlb[0].service_name : null
+}
+
+output "gwlb_endpoint_id" {
+  description = "The ID of the GWLB VPC endpoint"
+  value       = var.gwlb_enabled && length(var.gwlb_endpoint_subnet_ids) > 0 ? aws_vpc_endpoint.gwlb[0].id : null
+}
+
+# ASG outputs
+output "autoscaling_group_name" {
+  description = "The name of the autoscaling group if running in HA mode"
+  value       = var.ha_mode ? aws_autoscaling_group.main[0].name : null
+}
+
+output "autoscaling_group_id" {
+  description = "The ID of the autoscaling group if running in HA mode"
+  value       = var.ha_mode ? aws_autoscaling_group.main[0].id : null
+}
+
+# Scaling policy outputs
+output "cpu_target_tracking_policy_arn" {
+  description = "The ARN of the CPU target tracking scaling policy"
+  value       = var.ha_mode && var.gwlb_enabled && var.asg_dynamic_scaling_enabled && var.asg_cpu_target_tracking_enabled ? aws_autoscaling_policy.cpu_target_tracking[0].arn : null
+}
+
+output "network_in_target_tracking_policy_arn" {
+  description = "The ARN of the Network In target tracking scaling policy"
+  value       = var.ha_mode && var.gwlb_enabled && var.asg_dynamic_scaling_enabled && var.asg_network_in_target_tracking_enabled ? aws_autoscaling_policy.network_in_target_tracking[0].arn : null
+}
+
+output "network_out_target_tracking_policy_arn" {
+  description = "The ARN of the Network Out target tracking scaling policy"
+  value       = var.ha_mode && var.gwlb_enabled && var.asg_dynamic_scaling_enabled && var.asg_network_out_target_tracking_enabled ? aws_autoscaling_policy.network_out_target_tracking[0].arn : null
+}
+
+output "scale_out_policy_arn" {
+  description = "The ARN of the scale out step scaling policy"
+  value       = var.ha_mode && var.gwlb_enabled && var.asg_dynamic_scaling_enabled && var.asg_step_scaling_enabled ? aws_autoscaling_policy.scale_out[0].arn : null
+}
+
+output "scale_in_policy_arn" {
+  description = "The ARN of the scale in step scaling policy"
+  value       = var.ha_mode && var.gwlb_enabled && var.asg_dynamic_scaling_enabled && var.asg_step_scaling_enabled ? aws_autoscaling_policy.scale_in[0].arn : null
+}

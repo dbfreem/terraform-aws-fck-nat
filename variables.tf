@@ -173,3 +173,209 @@ variable "cloud_init_parts" {
   }))
   default = []
 }
+
+variable "gwlb_enabled" {
+  description = "Enables the Gateway Load Balancer integration"
+  type        = bool
+  default     = false  
+}
+
+variable "gwlb_health_check_port" {
+  description = "The Gateway Load Balancer health check port"
+  type        = number
+  default     = 8008
+}
+
+# GWLB additional configuration
+variable "gwlb_subnet_ids" {
+  description = "Subnet IDs for the Gateway Load Balancer deployment"
+  type        = list(string)
+  default     = []
+}
+
+variable "gwlb_cross_zone_load_balancing" {
+  description = "Enable cross-zone load balancing for the Gateway Load Balancer"
+  type        = bool
+  default     = false
+}
+
+variable "gwlb_health_check_healthy_threshold" {
+  description = "Number of consecutive successful health checks required to mark target as healthy"
+  type        = number
+  default     = 3
+}
+
+variable "gwlb_health_check_unhealthy_threshold" {
+  description = "Number of consecutive failed health checks required to mark target as unhealthy"
+  type        = number
+  default     = 3
+}
+
+variable "gwlb_health_check_interval" {
+  description = "Time between health checks in seconds"
+  type        = number
+  default     = 30
+}
+
+variable "gwlb_endpoint_service_enabled" {
+  description = "Enable VPC Endpoint Service for the Gateway Load Balancer"
+  type        = bool
+  default     = false
+}
+
+variable "gwlb_endpoint_service_acceptance_required" {
+  description = "Whether acceptance is required for VPC Endpoint Service connections"
+  type        = bool
+  default     = true
+}
+
+variable "gwlb_endpoint_service_allowed_principals" {
+  description = "List of ARNs of principals allowed to discover the endpoint service"
+  type        = list(string)
+  default     = []
+}
+
+variable "gwlb_endpoint_subnet_ids" {
+  description = "List of subnet IDs for GWLB VPC endpoint (spans multiple AZs)"
+  type        = list(string)
+  default     = []
+}
+
+# Cross-AZ ASG configuration
+variable "subnet_ids" {
+  description = "List of subnet IDs for cross-AZ ASG deployment. If provided, takes precedence over subnet_id"
+  type        = list(string)
+  default     = []
+}
+
+# ASG capacity configuration
+variable "asg_min_size" {
+  description = "Minimum size of the Auto Scaling Group"
+  type        = number
+  default     = 1
+}
+
+variable "asg_max_size" {
+  description = "Maximum size of the Auto Scaling Group"
+  type        = number
+  default     = 1
+}
+
+variable "asg_desired_capacity" {
+  description = "Desired capacity of the Auto Scaling Group"
+  type        = number
+  default     = 1
+}
+
+variable "asg_health_check_grace_period" {
+  description = "Time after instance comes into service before checking health"
+  type        = number
+  default     = 300
+}
+
+# Dynamic scaling configuration
+variable "asg_dynamic_scaling_enabled" {
+  description = "Enable dynamic scaling policies for the Auto Scaling Group"
+  type        = bool
+  default     = false
+}
+
+variable "asg_disable_scale_in" {
+  description = "Disable scale-in for target tracking policies"
+  type        = bool
+  default     = false
+}
+
+# CPU target tracking
+variable "asg_cpu_target_tracking_enabled" {
+  description = "Enable CPU utilization target tracking scaling policy"
+  type        = bool
+  default     = true
+}
+
+variable "asg_cpu_target_value" {
+  description = "Target CPU utilization percentage for target tracking"
+  type        = number
+  default     = 70
+}
+
+# Network In target tracking
+variable "asg_network_in_target_tracking_enabled" {
+  description = "Enable Network In target tracking scaling policy"
+  type        = bool
+  default     = false
+}
+
+variable "asg_network_in_target_value" {
+  description = "Target Network In bytes for target tracking"
+  type        = number
+  default     = 100000000 # 100 MB
+}
+
+# Network Out target tracking
+variable "asg_network_out_target_tracking_enabled" {
+  description = "Enable Network Out target tracking scaling policy"
+  type        = bool
+  default     = false
+}
+
+variable "asg_network_out_target_value" {
+  description = "Target Network Out bytes for target tracking"
+  type        = number
+  default     = 100000000 # 100 MB
+}
+
+# Step scaling configuration
+variable "asg_step_scaling_enabled" {
+  description = "Enable step scaling policies with CloudWatch alarms"
+  type        = bool
+  default     = false
+}
+
+variable "asg_scale_out_adjustment" {
+  description = "Number of instances to add when scaling out"
+  type        = number
+  default     = 1
+}
+
+variable "asg_scale_in_adjustment" {
+  description = "Number of instances to remove when scaling in (use negative number)"
+  type        = number
+  default     = -1
+}
+
+variable "asg_scale_out_threshold" {
+  description = "CPU threshold percentage for scale out alarm"
+  type        = number
+  default     = 80
+}
+
+variable "asg_scale_in_threshold" {
+  description = "CPU threshold percentage for scale in alarm"
+  type        = number
+  default     = 30
+}
+
+variable "asg_scale_out_evaluation_periods" {
+  description = "Number of evaluation periods for scale out alarm"
+  type        = number
+  default     = 2
+}
+
+variable "asg_scale_in_evaluation_periods" {
+  description = "Number of evaluation periods for scale in alarm"
+  type        = number
+  default     = 2
+}
+
+variable "asg_scale_out_period" {
+  description = "Period in seconds for scale out alarm evaluation"
+  type        = number
+  default     = 60
+}
+
+variable "asg_scale_in_period" {
+  description = "Period in seconds for scale in alarm evaluation"
+  type        = number
+  default     = 60
+}
