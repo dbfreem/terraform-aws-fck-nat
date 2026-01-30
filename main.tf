@@ -55,6 +55,8 @@ resource "aws_security_group" "main" {
 }
 
 resource "aws_network_interface" "main" {
+  count = var.gwlb_enabled ? 0 : 1
+
   description       = "${var.name} static private ENI"
   subnet_id         = var.subnet_id
   security_groups   = [aws_security_group.main.id]
@@ -64,11 +66,11 @@ resource "aws_network_interface" "main" {
 }
 
 resource "aws_route" "main" {
-  for_each = var.update_route_tables || var.update_route_table ? merge(var.route_tables_ids, var.route_table_id != null ? { RESERVED_FKC_NAT = var.route_table_id } : {}) : {}
+  for_each = !var.gwlb_enabled && (var.update_route_tables || var.update_route_table) ? merge(var.route_tables_ids, var.route_table_id != null ? { RESERVED_FKC_NAT = var.route_table_id } : {}) : {}
 
   route_table_id         = each.value
   destination_cidr_block = "0.0.0.0/0"
-  network_interface_id   = aws_network_interface.main.id
+  network_interface_id   = aws_network_interface.main[0].id
 }
 
 resource "aws_ssm_parameter" "cloudwatch_agent_config" {

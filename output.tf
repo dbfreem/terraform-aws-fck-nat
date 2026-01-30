@@ -39,13 +39,13 @@ output "ami_id" {
 }
 
 output "eni_id" {
-  description = "The ID of the static ENI used by the fck-nat instance"
-  value       = aws_network_interface.main.id
+  description = "The ID of the static ENI used by the fck-nat instance (null when gwlb_enabled)"
+  value       = var.gwlb_enabled ? null : aws_network_interface.main[0].id
 }
 
 output "eni_arn" {
-  description = "The ARN of the static ENI used by the fck-nat instance"
-  value       = aws_network_interface.main.arn
+  description = "The ARN of the static ENI used by the fck-nat instance (null when gwlb_enabled)"
+  value       = var.gwlb_enabled ? null : aws_network_interface.main[0].arn
 }
 
 output "security_group_id" {
