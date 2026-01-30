@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "main" {
   }
 
   dynamic "statement" {
-    for_each = length(var.eip_allocation_ids) != 0 ? ["x"] : []
+    for_each = length(var.eip_allocation_ids) != 0 && !var.gwlb_enabled ? ["x"] : []
 
     content {
       sid    = "ManageEIPAllocation"
@@ -40,10 +40,64 @@ data "aws_iam_policy_document" "main" {
   }
 
   dynamic "statement" {
-    for_each = length(var.eip_allocation_ids) != 0 ? ["x"] : []
+    for_each = var.gwlb_enabled ? ["x"] : []
+
+    content {
+      sid    = "ManageGWLBEIPPool"
+      effect = "Allow"
+      actions = [
+        "ec2:AssociateAddress",
+        "ec2:DisassociateAddress",
+        "ec2:DescribeAddresses",
+      ]
+      resources = ["*"]
+      condition {
+        test     = "StringEquals"
+        variable = "ec2:ResourceTag/Name"
+        values   = [for i in range(var.asg_max_size) : "${var.name}-${i}"]
+      }
+    }
+  }
+
+  dynamic "statement" {
+    for_each = var.gwlb_enabled ? ["x"] : []
+
+    content {
+      sid    = "DescribeEIPAllocations"
+      effect = "Allow"
+      actions = [
+        "ec2:DescribeAddresses",
+      ]
+      resources = ["*"]
+    }
+  }
+
+  dynamic "statement" {
+    for_each = length(var.eip_allocation_ids) != 0 && !var.gwlb_enabled ? ["x"] : []
 
     content {
       sid    = "ManageEIPNetworkInterface"
+      effect = "Allow"
+      actions = [
+        "ec2:AssociateAddress",
+        "ec2:DisassociateAddress",
+      ]
+      resources = [
+        "arn:aws:ec2:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:network-interface/*"
+      ]
+      condition {
+        test     = "StringEquals"
+        variable = "ec2:ResourceTag/Name"
+        values   = [local.instance_name]
+      }
+    }
+  }
+
+  dynamic "statement" {
+    for_each = var.gwlb_enabled ? ["x"] : []
+
+    content {
+      sid    = "ManageGWLBEIPNetworkInterface"
       effect = "Allow"
       actions = [
         "ec2:AssociateAddress",

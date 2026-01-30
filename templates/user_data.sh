@@ -10,12 +10,36 @@ echo "cwagent_cfg_param_name=${TERRAFORM_CWAGENT_CFG_PARAM_NAME}" >> /etc/fck-na
 echo "gwlb_enabled=${TERRAFORM_GWLB_ENABLED}" >> /etc/fck-nat.conf
 echo "gwlb_health_check_port=${TERRAFORM_GWLB_HEALTH_CHECK_PORT}" >> /etc/fck-nat.conf
 
-# Disable source/dest check on the instance's ENI when GWLB is enabled
+# GWLB-specific setup
 if [ "${TERRAFORM_GWLB_ENABLED}" = "true" ]; then
   TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
   MAC=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/mac)
   ENI_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" "http://169.254.169.254/latest/meta-data/network/interfaces/macs/$MAC/interface-id")
+
+  # Disable source/dest check on the instance's ENI
   aws ec2 modify-network-interface-attribute --network-interface-id "$ENI_ID" --no-source-dest-check
+
+  # Claim an available EIP from the pool
+  if [ -n "${TERRAFORM_EIP_POOL}" ]; then
+    EIP_CLAIMED=false
+    for ALLOC_ID in $(echo "${TERRAFORM_EIP_POOL}" | tr ',' ' '); do
+      # Check if EIP is already associated
+      ASSOCIATION=$(aws ec2 describe-addresses --allocation-ids "$ALLOC_ID" --query 'Addresses[0].AssociationId' --output text 2>/dev/null)
+      if [ "$ASSOCIATION" = "None" ] || [ -z "$ASSOCIATION" ]; then
+        # Try to associate this EIP
+        if aws ec2 associate-address --allocation-id "$ALLOC_ID" --network-interface-id "$ENI_ID" 2>/dev/null; then
+          echo "Successfully associated EIP $ALLOC_ID"
+          EIP_CLAIMED=true
+          break
+        fi
+      fi
+    done
+
+    if [ "$EIP_CLAIMED" = "false" ]; then
+      echo "ERROR: Failed to claim an EIP from the pool. All EIPs are in use."
+      exit 1
+    fi
+  fi
 fi
 
 service fck-nat restart

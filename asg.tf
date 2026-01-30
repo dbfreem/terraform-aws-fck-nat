@@ -1,3 +1,12 @@
+# EIP pool for GWLB mode - one EIP per max ASG instance
+resource "aws_eip" "gwlb_pool" {
+  count = var.gwlb_enabled ? var.asg_max_size : 0
+
+  domain = "vpc"
+
+  tags = merge({ Name = "${var.name}-${count.index}" }, var.tags)
+}
+
 resource "aws_autoscaling_group" "main" {
   count = var.ha_mode ? 1 : 0
 

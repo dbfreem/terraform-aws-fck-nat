@@ -175,3 +175,14 @@ output "scale_in_policy_arn" {
   description = "The ARN of the scale in step scaling policy"
   value       = var.ha_mode && var.gwlb_enabled && var.asg_dynamic_scaling_enabled && var.asg_step_scaling_enabled ? aws_autoscaling_policy.scale_in[0].arn : null
 }
+
+# EIP pool outputs for GWLB mode
+output "eip_pool_public_ips" {
+  description = "List of public IPs in the EIP pool for GWLB mode (use these for whitelisting)"
+  value       = var.gwlb_enabled ? aws_eip.gwlb_pool[*].public_ip : []
+}
+
+output "eip_pool_allocation_ids" {
+  description = "List of EIP allocation IDs in the pool for GWLB mode"
+  value       = var.gwlb_enabled ? aws_eip.gwlb_pool[*].allocation_id : []
+}

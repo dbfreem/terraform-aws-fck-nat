@@ -39,7 +39,8 @@ data "cloudinit_config" "this" {
     content_type = "text/x-shellscript"
     content = templatefile("${path.module}/templates/user_data.sh", {
       TERRAFORM_ENI_ID                 = var.gwlb_enabled ? "" : aws_network_interface.main[0].id
-      TERRAFORM_EIP_ID                 = length(var.eip_allocation_ids) != 0 ? var.eip_allocation_ids[0] : ""
+      TERRAFORM_EIP_ID                 = !var.gwlb_enabled && length(var.eip_allocation_ids) != 0 ? var.eip_allocation_ids[0] : ""
+      TERRAFORM_EIP_POOL               = var.gwlb_enabled ? join(",", aws_eip.gwlb_pool[*].allocation_id) : ""
       TERRAFORM_CWAGENT_ENABLED        = var.use_cloudwatch_agent ? "true" : ""
       TERRAFORM_CWAGENT_CFG_PARAM_NAME = local.cwagent_param_name != null ? local.cwagent_param_name : ""
       TERRAFORM_GWLB_ENABLED           = var.gwlb_enabled ? "true" : ""
