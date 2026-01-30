@@ -290,7 +290,7 @@ variable "asg_disable_scale_in" {
 variable "asg_cpu_target_tracking_enabled" {
   description = "Enable CPU utilization target tracking scaling policy"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "asg_cpu_target_value" {
